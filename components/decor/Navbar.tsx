@@ -4,8 +4,9 @@ import Link from 'next/link'
 import { useEffect, useRef, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Menu, X } from 'lucide-react'
+import { Menu, X, LogIn } from 'lucide-react'
 import { ThemeToggle } from './ThemeToggle'
+import { useAuth } from '@/contexts/AuthContext'
 
 const navLinks = [
   { href: '/', label: 'Home' },
@@ -23,6 +24,7 @@ export function Navbar() {
   const heroElRef = useRef<HTMLElement | null>(null)
   const thresholdRef = useRef<number>(0)
   const pathname = usePathname()
+  const { user } = useAuth()
 
   useEffect(() => {
     heroElRef.current = document.querySelector<HTMLElement>('[data-hero="true"]')
@@ -114,11 +116,39 @@ export function Navbar() {
                 {link.label}
               </Link>
             ))}
+            {!user && (
+              <Link
+                href="/login"
+                className={[
+                  'flex items-center gap-2 text-sm font-medium transition-colors px-4 py-2 rounded-xl',
+                  overlayText
+                    ? 'text-white/90 hover:text-white bg-white/10 hover:bg-white/20'
+                    : 'text-light-text dark:text-dark-text bg-light-surface dark:bg-dark-surface hover:bg-light-accent/10 dark:hover:bg-dark-accent/10',
+                ].join(' ')}
+              >
+                <LogIn size={16} />
+                Login
+              </Link>
+            )}
             <ThemeToggle />
           </div>
 
           {/* Mobile Menu Button */}
           <div className="flex items-center gap-4 md:hidden">
+            {!user && (
+              <Link
+                href="/login"
+                className={[
+                  'flex items-center gap-1 text-sm font-medium transition-colors px-3 py-2 rounded-xl',
+                  overlayText
+                    ? 'text-white/90 hover:text-white bg-white/10 hover:bg-white/20'
+                    : 'text-light-text dark:text-dark-text bg-light-surface dark:bg-dark-surface',
+                ].join(' ')}
+              >
+                <LogIn size={16} />
+                Login
+              </Link>
+            )}
             <ThemeToggle />
             <button
               onClick={() => setIsOpen(!isOpen)}
@@ -154,6 +184,16 @@ export function Navbar() {
                   {link.label}
                 </Link>
               ))}
+              {!user && (
+                <Link
+                  href="/login"
+                  onClick={() => setIsOpen(false)}
+                  className="flex items-center gap-2 text-sm font-medium text-light-text dark:text-dark-text bg-light-surface dark:bg-dark-surface hover:bg-light-accent/10 dark:hover:bg-dark-accent/10 px-4 py-2 rounded-xl transition-colors"
+                >
+                  <LogIn size={16} />
+                  Login
+                </Link>
+              )}
             </div>
           </motion.div>
         )}
