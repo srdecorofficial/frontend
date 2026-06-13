@@ -35,7 +35,7 @@ export default function AboutPage() {
         <div className="absolute inset-0">
           <Image
             src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=1920"
-            alt="About SR Décor"
+            alt="About JayShree Furnish"
             fill
             className="object-cover"
           />
@@ -48,7 +48,7 @@ export default function AboutPage() {
             transition={{ duration: 0.8 }}
           >
             <h1 className="font-sans text-4xl md:text-6xl font-bold text-white mb-4">
-              About SR Décor
+              About JayShree Furnish
             </h1>
             <p className="text-xl text-white/90 max-w-2xl">
               Crafting elegant living spaces with premium home décor
@@ -71,7 +71,7 @@ export default function AboutPage() {
             </h2>
             <div className="space-y-4 text-light-textMuted dark:text-dark-textMuted">
               <p>
-                Founded with a vision to transform houses into homes, SR Décor has been at the
+                Founded with a vision to transform houses into homes, JayShree Furnish has been at the
                 forefront of elegant interior design for over a decade. We believe that every space
                 deserves to reflect the personality and style of its inhabitants.
               </p>

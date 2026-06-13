@@ -3,9 +3,10 @@
 import { ThemeProvider } from '@/components/ThemeProvider'
 import { AuthProvider } from '@/contexts/AuthContext'
 import { AppProvider } from '@/contexts/AppContext'
-import { ErrorBoundary } from 'react-error-boundary'
+import { ErrorBoundary, FallbackProps } from 'react-error-boundary'
 
-function ErrorFallback({ error }: { error: Error }) {
+function ErrorFallback({ error: unknownError }: FallbackProps) {
+  const error = unknownError as Error
   return (
     <div style={{ padding: '40px', minHeight: '100vh', backgroundColor: '#faf9f7' }}>
       <h1 style={{ fontSize: '24px', color: '#d32f2f', marginBottom: '16px' }}>Error</h1>

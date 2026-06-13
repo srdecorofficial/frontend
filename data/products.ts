@@ -5,8 +5,10 @@ export interface Product {
   price: number
   images: string[]
   category: string
+  subCategory?: string
   isBestseller: boolean
   isNewArrival: boolean
+  inStock?: boolean
   specifications?: {
     material?: string
     dimensions?: string

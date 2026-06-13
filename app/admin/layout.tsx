@@ -16,11 +16,8 @@ export default function AdminLayout({
   const [authTimeout, setAuthTimeout] = useState(false)
 
   useEffect(() => {
-    // Timeout after 8 seconds
     const timeout = setTimeout(() => {
-      if (loading) {
-        setAuthTimeout(true)
-      }
+      if (loading) setAuthTimeout(true)
     }, 8000)
 
     if (!loading && !user && !authTimeout) {
@@ -30,7 +27,6 @@ export default function AdminLayout({
     return () => clearTimeout(timeout)
   }, [user, loading, router, authTimeout])
 
-  // If loading for too long, show error message
   if (loading && authTimeout) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">

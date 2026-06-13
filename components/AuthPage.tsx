@@ -59,7 +59,7 @@ export default function AuthPage() {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
           </div>
-          <h1 className="text-3xl font-bold text-gray-900">Bill Generator Pro</h1>
+          <h1 className="text-3xl font-bold text-gray-900">JayShree Furnish Admin Panel</h1>
           <p className="text-gray-600 mt-2">Manage your business invoices efficiently</p>
         </div>
 
@@ -67,22 +67,20 @@ export default function AuthPage() {
           <button
             type="button"
             onClick={() => setIsLogin(true)}
-            className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-              isLogin
+            className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${isLogin
                 ? 'bg-white text-primary-600 shadow-sm'
                 : 'text-gray-600 hover:text-gray-900'
-            }`}
+              }`}
           >
             Login
           </button>
           <button
             type="button"
             onClick={() => setIsLogin(false)}
-            className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-              !isLogin
+            className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${!isLogin
                 ? 'bg-white text-primary-600 shadow-sm'
                 : 'text-gray-600 hover:text-gray-900'
-            }`}
+              }`}
           >
             Register
           </button>

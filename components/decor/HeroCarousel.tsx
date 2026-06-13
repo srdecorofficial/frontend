@@ -199,7 +199,7 @@ export function HeroCarousel({
 
             <div className="mt-9 flex items-center justify-center md:justify-start gap-3">
               <Link href={activeSlide?.href ?? '/products'}>
-                <Button variant="primary" className="!bg-dark-accent dark:!bg-dark-accent !text-white hover:!opacity-90">
+                <Button variant="primary">
                   {activeSlide?.ctaLabel ?? 'Explore Collection'}
                 </Button>
               </Link>

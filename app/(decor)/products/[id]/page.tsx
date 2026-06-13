@@ -127,7 +127,7 @@ export default function ProductDetailsPage({ params }: { params: Promise<{ id: s
               className="flex-1"
               onClick={() => setIsModalOpen(true)}
             >
-              <MessageSquare size={20} className="mr-2" />
+              <MessageSquare size={20} className="mr-2 shrink-0" />
               Contact for Quotation
             </Button>
           </div>

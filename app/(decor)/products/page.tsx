@@ -1,41 +1,82 @@
 'use client'
 
-import { useState, useMemo, Suspense } from 'react'
+import { useState, useMemo, useEffect, Suspense } from 'react'
 import { useSearchParams } from 'next/navigation'
-import { Filter, X } from 'lucide-react'
+import { Filter } from 'lucide-react'
 import { ProductGrid } from '@/components/decor/ProductGrid'
-import { FilterSidebar } from '@/components/decor/FilterSidebar'
+import { FilterSidebar, type CategoryItem, type SubCategoryItem } from '@/components/decor/FilterSidebar'
 import { SearchInput } from '@/components/decor/SearchInput'
-import { products, getProductsByCategory } from '@/data/products'
 import { ProductGridSkeleton } from '@/components/decor/Skeleton'
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
 function ProductsContent() {
   const searchParams = useSearchParams()
-  const initialCategory = searchParams.get('category') || 'All'
-  
-  const [selectedCategory, setSelectedCategory] = useState(initialCategory)
+  const categoryParam = searchParams.get('category') || 'All'
+
+  const [allProducts, setAllProducts] = useState<any[]>([])
+  const [categories, setCategories] = useState<CategoryItem[]>([])
+  const [subCategories, setSubCategories] = useState<SubCategoryItem[]>([])
+  const [loadingProducts, setLoadingProducts] = useState(true)
+  const [selectedCategory, setSelectedCategory] = useState(categoryParam)
+  const [selectedSubCategory, setSelectedSubCategory] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
   const [isFilterOpen, setIsFilterOpen] = useState(false)
-  const [sortBy, setSortBy] = useState<'name'>('name')
+
+  useEffect(() => {
+    Promise.all([
+      fetch(`${API_URL}/api/v1/products`).then(r => r.json()),
+      fetch(`${API_URL}/api/v1/categories`).then(r => r.json()),
+      fetch(`${API_URL}/api/v1/subcategories`).then(r => r.json()),
+    ])
+      .then(([prodData, catData, subData]) => {
+        setAllProducts(Array.isArray(prodData.data) ? prodData.data : [])
+        const rawCats: any[] = Array.isArray(catData.data) ? catData.data : []
+        const cats: CategoryItem[] = rawCats
+          .sort((a: any, b: any) => a.order - b.order)
+          .map((c: any) => ({ id: c.id, label: c.label }))
+        setCategories(cats)
+        const subs: SubCategoryItem[] = Array.isArray(subData.data)
+          ? subData.data.map((s: any) => ({ id: s.id, label: s.label, categoryId: s.categoryId }))
+          : []
+        setSubCategories(subs)
+
+        // Resolve the ?category= URL param against real categories. It may arrive
+        // as a label ("Curtains") or as a slug from a category href ("curtains" /
+        // "wooden_flooring"). Products are filtered by label, so map it to a label.
+        if (categoryParam !== 'All') {
+          const slugify = (s: string) => s.toLowerCase().replace(/[\s_-]+/g, '')
+          const match = rawCats.find((c: any) => {
+            if (c.label?.toLowerCase() === categoryParam.toLowerCase()) return true
+            const hrefSlug = String(c.href || '').split('category=')[1] || ''
+            return slugify(hrefSlug) === slugify(categoryParam) || slugify(c.label || '') === slugify(categoryParam)
+          })
+          if (match) setSelectedCategory(match.label)
+        }
+      })
+      .catch(() => { })
+      .finally(() => setLoadingProducts(false))
+  }, [categoryParam])
 
   const filteredProducts = useMemo(() => {
-    let result = getProductsByCategory(selectedCategory)
-    
+    let result = selectedCategory === 'All'
+      ? allProducts
+      : allProducts.filter((p) => p.category === selectedCategory)
+
+    if (selectedSubCategory) {
+      result = result.filter((p) => p.subCategory === selectedSubCategory)
+    }
+
     if (searchQuery) {
       result = result.filter(
         (p) =>
           p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          p.description.toLowerCase().includes(searchQuery.toLowerCase())
+          (p.description || '').toLowerCase().includes(searchQuery.toLowerCase())
       )
     }
 
-    // Sort
-    result = [...result].sort((a, b) => {
-      return a.name.localeCompare(b.name)
-    })
-
-    return result
-  }, [selectedCategory, searchQuery, sortBy])
+    return [...result].sort((a, b) => a.name.localeCompare(b.name))
+  }, [allProducts, selectedCategory, selectedSubCategory, searchQuery])
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -49,17 +90,18 @@ function ProductsContent() {
       </div>
 
       <div className="flex flex-col md:flex-row gap-6">
-        {/* Filter Sidebar */}
         <FilterSidebar
           isOpen={isFilterOpen}
           onClose={() => setIsFilterOpen(false)}
           selectedCategory={selectedCategory}
-          onCategoryChange={setSelectedCategory}
+          onCategoryChange={(cat) => { setSelectedCategory(cat); setSelectedSubCategory('') }}
+          categories={categories}
+          selectedSubCategory={selectedSubCategory}
+          onSubCategoryChange={setSelectedSubCategory}
+          subCategories={subCategories}
         />
 
-        {/* Main Content */}
         <div className="flex-1">
-          {/* Mobile Filter Button */}
           <div className="md:hidden mb-4">
             <button
               onClick={() => setIsFilterOpen(true)}
@@ -70,7 +112,6 @@ function ProductsContent() {
             </button>
           </div>
 
-          {/* Search and Sort */}
           <div className="flex flex-col sm:flex-row gap-4 mb-6">
             <div className="flex-1">
               <SearchInput
@@ -79,23 +120,15 @@ function ProductsContent() {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as any)}
-              className="px-4 py-3 rounded-2xl bg-light-surface dark:bg-dark-surface border border-light-border dark:border-dark-border text-light-text dark:text-dark-text focus:outline-none focus:ring-2 focus:ring-light-accent dark:focus:ring-dark-accent"
-            >
-              <option value="name">Sort by Name</option>
-            </select>
           </div>
 
-          {/* Results Count */}
           <div className="mb-6 text-sm text-light-textMuted dark:text-dark-textMuted">
-            {filteredProducts.length} product{filteredProducts.length !== 1 ? 's' : ''} found
-            {selectedCategory !== 'All' && ` in ${selectedCategory}`}
+            {loadingProducts ? 'Loading…' : (
+              `${filteredProducts.length} product${filteredProducts.length !== 1 ? 's' : ''} found${selectedSubCategory ? ` in ${selectedSubCategory}` : selectedCategory !== 'All' ? ` in ${selectedCategory}` : ''}`
+            )}
           </div>
 
-          {/* Product Grid */}
-          <ProductGrid products={filteredProducts} />
+          {loadingProducts ? <ProductGridSkeleton /> : <ProductGrid products={filteredProducts} />}
         </div>
       </div>
     </div>
@@ -117,4 +150,3 @@ export default function ProductsPage() {
     </Suspense>
   )
 }
-

@@ -7,6 +7,10 @@ const nextConfig = {
         protocol: 'https',
         hostname: 'images.unsplash.com',
       },
+      {
+        protocol: 'https',
+        hostname: 'pub-d86c9f986cbe425abc6e9114a5307135.r2.dev',
+      }
     ],
   },
   webpack: (config, { isServer }) => {
@@ -18,13 +22,13 @@ const nextConfig = {
         fullySpecified: false,
       },
     })
-    
+
     // Exclude undici from processing
     config.externals = config.externals || []
     if (isServer) {
       config.externals.push('undici')
     }
-    
+
     return config
   },
   transpilePackages: ['undici'],

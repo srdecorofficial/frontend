@@ -32,15 +32,15 @@
   }
   
   .btn-primary {
-    @apply bg-primary-500 text-white hover:bg-primary-600 focus:ring-primary-500;
+    @apply bg-[#bf9b23] text-white hover:bg-[#a6871e] focus:ring-[#bf9b23];
   }
   
   .btn-secondary {
-    @apply bg-gray-500 text-white hover:bg-gray-600 focus:ring-gray-500;
+    @apply bg-[#0a3d30] text-[#f5f3f0] hover:bg-[#0f4a39] focus:ring-[#bf9b23];
   }
-  
+
   .btn-outline {
-    @apply bg-transparent text-gray-600 border border-gray-300 hover:bg-gray-50 hover:text-gray-700 focus:ring-gray-500;
+    @apply bg-transparent text-[#052A22] border border-[#bf9b23] hover:bg-[#fdf8e8] hover:text-[#052A22] focus:ring-[#bf9b23];
   }
   
   .btn-danger {

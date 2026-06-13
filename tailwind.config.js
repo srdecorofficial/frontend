@@ -13,11 +13,11 @@ module.exports = {
       },
       colors: {
         primary: {
-          50: '#eff6ff',
-          100: '#dbeafe',
-          500: '#3b82f6',
-          600: '#2563eb',
-          700: '#1d4ed8',
+          50: '#fdf8e8',
+          100: '#f9edbb',
+          500: '#bf9b23',
+          600: '#a6871e',
+          700: '#8c7219',
         },
         // Light theme colors
         light: {
@@ -27,17 +27,17 @@ module.exports = {
           text: '#2c2c2c',
           textMuted: '#6b6b6b',
           border: '#e5e3e0',
-          accent: '#d4a574',
+          accent: '#bf9b23',
         },
-        // Dark theme colors
+        // Dark theme colors (emerald green)
         dark: {
-          bg: '#1a1816',
-          surface: '#252320',
-          card: '#2e2b28',
+          bg: '#052A22',
+          surface: '#0a3d30',
+          card: '#0f4a39',
           text: '#f5f3f0',
-          textMuted: '#a8a5a0',
-          border: '#3a3734',
-          accent: '#c9a066',
+          textMuted: '#a8b8b3',
+          border: '#1a5c48',
+          accent: '#bf9b23',
         },
       },
       borderRadius: {

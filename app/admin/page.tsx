@@ -1,237 +1,157 @@
 'use client'
 
-import { useApp } from '@/contexts/AppContext'
 import { useAuth } from '@/contexts/AuthContext'
-import { useEffect } from 'react'
 import Link from 'next/link'
-import { 
-  FileText, 
-  Package, 
-  Users, 
-  TrendingUp,
-  Plus,
-  Eye,
-  Edit,
-  AlertCircle,
-  DollarSign,
-  MessageSquare
+import { useEffect, useState } from 'react'
+import {
+  Package,
+  Tag,
+  FileText,
+  LayoutDashboard,
+  ArrowRight,
+  RefreshCw,
 } from 'lucide-react'
+
+interface DashboardStats {
+  productCount: number
+  categoryCount: number
+  pageCount: number
+  lastUpdated: string | null
+}
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
 export default function AdminDashboard() {
   const { user } = useAuth()
-  const { 
-    bills, 
-    items, 
-    customers, 
-    quotationRequests,
-    loadingBills, 
-    loadingItems, 
-    loadingCustomers,
-    getPendingBills
-  } = useApp()
+  const [stats, setStats] = useState<DashboardStats>({
+    productCount: 0,
+    categoryCount: 0,
+    pageCount: 5, // home, about, contact, bestseller, new-arrivals
+    lastUpdated: null,
+  })
+  const [loading, setLoading] = useState(true)
 
-  const recentBills = bills.slice(0, 5)
-  const totalBills = bills.length
-  const totalItems = items.length
-  const totalCustomers = customers.length
-  const pendingLeads = quotationRequests.filter(r => r.status === 'pending').length
+  useEffect(() => {
+    async function loadStats() {
+      try {
+        const [productsRes, categoriesRes] = await Promise.all([
+          fetch(`${API_URL}/api/v1/products`),
+          fetch(`${API_URL}/api/v1/categories`),
+        ])
+        const productsJson = productsRes.ok ? await productsRes.json() : null
+        const categoriesJson = categoriesRes.ok ? await categoriesRes.json() : null
+        const products = Array.isArray(productsJson) ? productsJson : productsJson?.data ?? []
+        const categories = Array.isArray(categoriesJson) ? categoriesJson : categoriesJson?.data ?? []
+        setStats({
+          productCount: products.length,
+          categoryCount: categories.length,
+          pageCount: 5,
+          lastUpdated: new Date().toISOString(),
+        })
+      } catch {
+        // If backend isn't available yet, show zeroes
+      } finally {
+        setLoading(false)
+      }
+    }
+    loadStats()
+  }, [])
 
-  const totalRevenue = bills.reduce((sum, bill) => sum + bill.total, 0)
-  const pendingBills = getPendingBills()
-  const totalPendingAmount = pendingBills.reduce((sum, bill) => sum + (bill.balance || bill.total), 0)
-
-  const stats = [
+  const statCards = [
     {
-      name: 'Total Bills',
-      value: totalBills,
-      icon: FileText,
+      name: 'Products',
+      value: loading ? '...' : stats.productCount,
+      icon: Package,
       color: 'text-blue-600',
       bgColor: 'bg-blue-50',
+      href: '/admin/products',
     },
     {
-      name: 'Total Items',
-      value: totalItems,
-      icon: Package,
+      name: 'Categories',
+      value: loading ? '...' : stats.categoryCount,
+      icon: Tag,
       color: 'text-green-600',
       bgColor: 'bg-green-50',
+      href: '/admin/categories',
     },
     {
-      name: 'Total Customers',
-      value: totalCustomers,
-      icon: Users,
+      name: 'Pages',
+      value: loading ? '...' : stats.pageCount,
+      icon: FileText,
       color: 'text-purple-600',
       bgColor: 'bg-purple-50',
+      href: '/admin/pages',
     },
-    {
-      name: 'Total Revenue',
-      value: `₹${totalRevenue.toLocaleString()}`,
-      icon: TrendingUp,
-      color: 'text-orange-600',
-      bgColor: 'bg-orange-50',
-    },
+  ]
+
+  const quickActions = [
+    { label: 'Edit Page Content', href: '/admin/pages', icon: FileText, color: 'bg-purple-50 text-purple-700 hover:bg-purple-100' },
+    { label: 'Manage Products', href: '/admin/products', icon: Package, color: 'bg-blue-50 text-blue-700 hover:bg-blue-100' },
+    { label: 'Manage Categories', href: '/admin/categories', icon: Tag, color: 'bg-green-50 text-green-700 hover:bg-green-100' },
   ]
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-600 mt-2">Welcome back! Here's what's happening with your business.</p>
+      <div className="flex items-start justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-2">
+            <LayoutDashboard className="h-8 w-8 text-gray-700" />
+            Dashboard
+          </h1>
+          <p className="text-gray-600 mt-2">
+            Welcome back{user?.email ? `, ${user.email}` : ''}! Manage your store content from here.
+          </p>
+        </div>
+        {stats.lastUpdated && (
+          <div className="text-sm text-gray-500 flex items-center gap-1 mt-1">
+            <RefreshCw className="h-3 w-3" />
+            Updated {new Date(stats.lastUpdated).toLocaleTimeString()}
+          </div>
+        )}
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {stats.map((stat) => (
-          <div key={stat.name} className="card">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {statCards.map((stat) => (
+          <Link key={stat.name} href={stat.href} className="card hover:shadow-md transition-shadow group">
             <div className="flex items-center">
               <div className={`p-3 rounded-lg ${stat.bgColor}`}>
                 <stat.icon className={`h-6 w-6 ${stat.color}`} />
               </div>
-              <div className="ml-4">
+              <div className="ml-4 flex-1">
                 <p className="text-sm font-medium text-gray-600">{stat.name}</p>
                 <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
               </div>
+              <ArrowRight className="h-4 w-4 text-gray-400 group-hover:text-gray-600 transition-colors" />
             </div>
-          </div>
+          </Link>
         ))}
       </div>
 
-      {/* Pending Payments */}
-      {pendingBills.length > 0 && (
-        <div className="card border-l-4 border-orange-500">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-lg font-semibold text-gray-900 flex items-center">
-              <AlertCircle className="h-5 w-5 text-orange-500 mr-2" />
-              Pending Payments
-            </h3>
-            <span className="text-sm text-gray-600">
-              {pendingBills.length} {pendingBills.length === 1 ? 'bill' : 'bills'} pending
-            </span>
-          </div>
-          <div className="mb-4">
-            <div className="flex items-center justify-between p-3 bg-orange-50 rounded-lg">
-              <span className="text-sm font-medium text-gray-700">Total Pending Amount:</span>
-              <span className="text-lg font-bold text-orange-600">
-                ₹{totalPendingAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </span>
-            </div>
-          </div>
-          <div className="space-y-2 max-h-64 overflow-y-auto">
-            {pendingBills.slice(0, 5).map((bill) => (
-              <div key={bill.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <div className="flex-1">
-                  <div className="font-medium text-gray-900">{bill.billNumber}</div>
-                  <div className="text-sm text-gray-600">{bill.customerInfo.name}</div>
-                </div>
-                <div className="text-right">
-                  <div className="font-medium text-gray-900">
-                    ₹{(bill.balance || bill.total).toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                  </div>
-                  <div className="text-xs text-gray-500">
-                    {bill.paymentStatus === 'partial' ? 'Partial' : 'Pending'}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-          {pendingBills.length > 5 && (
-            <Link
-              href="/admin/bills"
-              className="block text-center text-blue-600 hover:text-blue-700 font-medium mt-3"
-            >
-              View all pending bills ({pendingBills.length})
-            </Link>
-          )}
-        </div>
-      )}
-
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="card">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
-          <div className="space-y-3">
+      <div className="card">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
+        <div className="space-y-3">
+          {quickActions.map((action) => (
             <Link
-              href="/admin/new-bill"
-              className="flex items-center p-3 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-colors"
+              key={action.label}
+              href={action.href}
+              className={`flex items-center p-3 rounded-lg transition-colors ${action.color}`}
             >
-              <Plus className="h-5 w-5 mr-3" />
-              Create New Bill
+              <action.icon className="h-5 w-5 mr-3" />
+              {action.label}
+              <ArrowRight className="h-4 w-4 ml-auto" />
             </Link>
-            <Link
-              href="/admin/warehouse"
-              className="flex items-center p-3 bg-gray-50 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
-            >
-              <Package className="h-5 w-5 mr-3" />
-              Manage Items
-            </Link>
-            <Link
-              href="/admin/customers"
-              className="flex items-center p-3 bg-gray-50 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
-            >
-              <Users className="h-5 w-5 mr-3" />
-              Manage Customers
-            </Link>
-            <Link
-              href="/admin/products"
-              className="flex items-center p-3 bg-gray-50 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors"
-            >
-              <Package className="h-5 w-5 mr-3" />
-              Manage SR Décor Products
-            </Link>
-            <Link
-              href="/admin/leads"
-              className="flex items-center p-3 bg-gray-50 text-gray-700 rounded-lg hover:bg-gray-100 transition-colors relative"
-            >
-              <MessageSquare className="h-5 w-5 mr-3" />
-              Quotation Requests
-              {pendingLeads > 0 && (
-                <span className="ml-auto bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
-                  {pendingLeads}
-                </span>
-              )}
-            </Link>
-          </div>
+          ))}
         </div>
+      </div>
 
-        <div className="card">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Recent Bills</h3>
-          {loadingBills ? (
-            <div className="flex items-center justify-center py-8">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-400"></div>
-            </div>
-          ) : recentBills.length > 0 ? (
-            <div className="space-y-3">
-              {recentBills.map((bill) => (
-                <div key={bill.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <div>
-                    <p className="font-medium text-gray-900">{bill.billNumber}</p>
-                    <p className="text-sm text-gray-600">{bill.customerInfo.name}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-medium text-gray-900">₹{bill.total.toLocaleString()}</p>
-                    <p className="text-sm text-gray-600">{bill.billDate}</p>
-                  </div>
-                </div>
-              ))}
-              <Link
-                href="/admin/bills"
-                className="block text-center text-blue-600 hover:text-blue-700 font-medium"
-              >
-                View all bills
-              </Link>
-            </div>
-          ) : (
-            <div className="text-center py-8 text-gray-500">
-              <FileText className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-              <p>No bills created yet</p>
-              <Link
-                href="/admin/new-bill"
-                className="text-blue-600 hover:text-blue-700 font-medium"
-              >
-                Create your first bill
-              </Link>
-            </div>
-          )}
-        </div>
+      {/* Info Banner */}
+      <div className="card border border-blue-100 bg-blue-50">
+        <h3 className="text-sm font-semibold text-blue-800 mb-1">About the CMS</h3>
+        <p className="text-sm text-blue-700">
+          Use <strong>Pages</strong> to edit meta tags and hero carousel content. Use <strong>Products</strong> to add, edit, and remove products displayed on the store. Use <strong>Categories</strong> to manage the category grid on the homepage.
+        </p>
       </div>
     </div>
   )

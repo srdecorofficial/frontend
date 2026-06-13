@@ -3,9 +3,18 @@
 import { useState, useEffect } from 'react'
 import { useApp } from '@/contexts/AppContext'
 import { useRouter } from 'next/navigation'
+import { RoleGuard } from '@/components/admin/RoleGuard'
 import { ArrowLeft, Save, Building, CreditCard, FileText } from 'lucide-react'
 
 export default function SettingsPage() {
+  return (
+    <RoleGuard allowed={['super_admin']}>
+      <SettingsContent />
+    </RoleGuard>
+  )
+}
+
+function SettingsContent() {
   const { businessSettings, loadingSettings, saveBusinessSettings } = useApp()
   const router = useRouter()
   const [formData, setFormData] = useState({
@@ -83,10 +92,10 @@ export default function SettingsPage() {
     }
   }
 
-  const setSRDecorInfo = () => {
+  const setJayShreeFurnishInfo = () => {
     setFormData({
       businessInfo: {
-        name: 'S. R. DECOR',
+        name: 'JAYSHREE FURNISH',
         email: 'srdecorofficial@gmail.com',
         phone: '+91-9811627334',
         address: 'SHOP NO. 3, DHANI RAM COMPLEX, NEAR METRO PILLAR NO. 54-55, Gurgaon, Haryana - 122002',
@@ -147,7 +156,7 @@ export default function SettingsPage() {
             <Building className="h-6 w-6 text-primary-600 mr-3" />
             <h3 className="text-lg font-semibold text-gray-900">Business Information</h3>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="form-label">Business Name *</label>
@@ -162,7 +171,7 @@ export default function SettingsPage() {
                 required
               />
             </div>
-            
+
             <div>
               <label className="form-label">Email *</label>
               <input
@@ -176,7 +185,7 @@ export default function SettingsPage() {
                 required
               />
             </div>
-            
+
             <div>
               <label className="form-label">Phone *</label>
               <input
@@ -190,7 +199,7 @@ export default function SettingsPage() {
                 required
               />
             </div>
-            
+
             <div>
               <label className="form-label">GSTIN</label>
               <input
@@ -203,7 +212,7 @@ export default function SettingsPage() {
                 className="form-input"
               />
             </div>
-            
+
             <div>
               <label className="form-label">PAN No.</label>
               <input
@@ -216,7 +225,7 @@ export default function SettingsPage() {
                 className="form-input"
               />
             </div>
-            
+
             <div>
               <label className="form-label">Business State *</label>
               <select
@@ -233,7 +242,7 @@ export default function SettingsPage() {
                 ))}
               </select>
             </div>
-            
+
             <div className="md:col-span-2">
               <label className="form-label">Address *</label>
               <textarea
@@ -256,7 +265,7 @@ export default function SettingsPage() {
             <CreditCard className="h-6 w-6 text-primary-600 mr-3" />
             <h3 className="text-lg font-semibold text-gray-900">Bank Details</h3>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="form-label">Bank Name</label>
@@ -270,7 +279,7 @@ export default function SettingsPage() {
                 className="form-input"
               />
             </div>
-            
+
             <div>
               <label className="form-label">A/c Holder Name</label>
               <input
@@ -283,7 +292,7 @@ export default function SettingsPage() {
                 className="form-input"
               />
             </div>
-            
+
             <div>
               <label className="form-label">Account Number</label>
               <input
@@ -296,7 +305,7 @@ export default function SettingsPage() {
                 className="form-input"
               />
             </div>
-            
+
             <div>
               <label className="form-label">IFSC Code</label>
               <input
@@ -309,7 +318,7 @@ export default function SettingsPage() {
                 className="form-input"
               />
             </div>
-            
+
             <div>
               <label className="form-label">Branch</label>
               <input
@@ -331,7 +340,7 @@ export default function SettingsPage() {
             <FileText className="h-6 w-6 text-primary-600 mr-3" />
             <h3 className="text-lg font-semibold text-gray-900">Default Terms & Conditions</h3>
           </div>
-          
+
           <div>
             <label className="form-label">Terms & Conditions</label>
             <textarea
@@ -351,12 +360,12 @@ export default function SettingsPage() {
         <div className="flex items-center justify-between">
           <button
             type="button"
-            onClick={setSRDecorInfo}
+            onClick={setJayShreeFurnishInfo}
             className="btn btn-outline"
           >
-            Set S.R. Decor Info
+            Set JayShree Furnish Info
           </button>
-          
+
           <div className="flex items-center space-x-4">
             <button
               type="button"

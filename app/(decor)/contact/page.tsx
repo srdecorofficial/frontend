@@ -2,8 +2,10 @@
 
 import { useState } from 'react'
 import { motion } from 'framer-motion'
-import { Mail, Phone, MapPin, Send } from 'lucide-react'
+import { Mail, Phone, MapPin, Send, Loader2 } from 'lucide-react'
 import { Button } from '@/components/decor/Button'
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -12,13 +14,44 @@ export default function ContactPage() {
     phone: '',
     message: '',
   })
+  const [submitting, setSubmitting] = useState(false)
+  const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; msg: string } | null>(null)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Handle form submission
-    console.log('Form submitted:', formData)
-    alert('Thank you for your message! We will get back to you soon.')
-    setFormData({ name: '', email: '', phone: '', message: '' })
+    setFeedback(null)
+
+    if (!/^[0-9]{10}$/.test(formData.phone.trim())) {
+      setFeedback({ type: 'error', msg: 'Please enter a valid 10-digit phone number.' })
+      return
+    }
+
+    setSubmitting(true)
+
+    try {
+      const res = await fetch(`${API_URL}/api/v1/contact-messages`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      })
+
+      if (!res.ok) {
+        const json = await res.json().catch(() => null)
+        throw new Error(json?.error?.message || 'Request failed')
+      }
+
+      setFeedback({ type: 'success', msg: "Thank you for your message! We'll get back to you soon." })
+      setFormData({ name: '', email: '', phone: '', message: '' })
+    } catch (err: any) {
+      setFeedback({
+        type: 'error',
+        msg: err?.message && err.message !== 'Request failed'
+          ? err.message
+          : 'Could not send your message. Please try again later.',
+      })
+    } finally {
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -56,7 +89,9 @@ export default function ContactPage() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-light-text dark:text-dark-text mb-1">Email</h3>
-                  <p className="text-light-textMuted dark:text-dark-textMuted">info@srdecor.com</p>
+                  <a href="mailto:contact@jsfurnish.com" className="text-light-textMuted dark:text-dark-textMuted hover:text-light-accent dark:hover:text-dark-accent transition-colors">
+                    contact@jsfurnish.com
+                  </a>
                 </div>
               </div>
               <div className="flex items-start gap-4">
@@ -65,7 +100,19 @@ export default function ContactPage() {
                 </div>
                 <div>
                   <h3 className="font-semibold text-light-text dark:text-dark-text mb-1">Phone</h3>
-                  <p className="text-light-textMuted dark:text-dark-textMuted">+91 98765 43210</p>
+                  <p className="text-light-textMuted dark:text-dark-textMuted">
+                    <a href="tel:+919811627334" className="hover:text-light-accent dark:hover:text-dark-accent transition-colors">
+                      +91-9811627334
+                    </a>
+                    <br />
+                    <a href="tel:+919315590584" className="hover:text-light-accent dark:hover:text-dark-accent transition-colors">
+                      +91-9315590584
+                    </a>
+                    <br />
+                    <a href="tel:+919315586128" className="hover:text-light-accent dark:hover:text-dark-accent transition-colors">
+                      +91-9315586128
+                    </a>
+                  </p>
                 </div>
               </div>
               <div className="flex items-start gap-4">
@@ -75,20 +122,37 @@ export default function ContactPage() {
                 <div>
                   <h3 className="font-semibold text-light-text dark:text-dark-text mb-1">Address</h3>
                   <p className="text-light-textMuted dark:text-dark-textMuted">
-                    123 Design Street<br />
-                    Mumbai, Maharashtra 400001<br />
-                    India
+                    23/2, Rajendra Market Road, Sikanderpur,<br />
+                    DLF Phase 1, Sector 24, Sikanderpur Ghosi,<br />
+                    Gurugram, Haryana 122002
                   </p>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Map Placeholder */}
+          {/* Map */}
           <div className="mt-8">
-            <div className="h-64 bg-light-surface dark:bg-dark-surface rounded-2xl flex items-center justify-center">
-              <p className="text-light-textMuted dark:text-dark-textMuted">Map placeholder</p>
+            <div className="h-64 rounded-2xl overflow-hidden">
+              <iframe
+                title="JayShree Furnish location"
+                src="https://maps.google.com/maps?q=JayShree+Furnish&ll=28.4825084,77.0969886&z=17&output=embed"
+                width="100%"
+                height="100%"
+                style={{ border: 0 }}
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                allowFullScreen
+              />
             </div>
+            <a
+              href="https://maps.app.goo.gl/VrxNYVy8YM83Z8Ym8"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block mt-3 text-sm text-light-accent dark:text-dark-accent hover:underline"
+            >
+              View on Google Maps →
+            </a>
           </div>
         </motion.div>
 
@@ -114,12 +178,11 @@ export default function ContactPage() {
             </div>
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-light-text dark:text-dark-text mb-2">
-                Email
+                Email <span className="text-light-textMuted dark:text-dark-textMuted">(Optional)</span>
               </label>
               <input
                 type="email"
                 id="email"
-                required
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 className="w-full px-4 py-3 rounded-xl bg-light-surface dark:bg-dark-surface border border-light-border dark:border-dark-border text-light-text dark:text-dark-text focus:outline-none focus:ring-2 focus:ring-light-accent dark:focus:ring-dark-accent"
@@ -132,8 +195,11 @@ export default function ContactPage() {
               <input
                 type="tel"
                 id="phone"
+                required
+                maxLength={10}
                 value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value.replace(/[^0-9]/g, '') })}
+                placeholder="10-digit phone number"
                 className="w-full px-4 py-3 rounded-xl bg-light-surface dark:bg-dark-surface border border-light-border dark:border-dark-border text-light-text dark:text-dark-text focus:outline-none focus:ring-2 focus:ring-light-accent dark:focus:ring-dark-accent"
               />
             </div>
@@ -150,9 +216,29 @@ export default function ContactPage() {
                 className="w-full px-4 py-3 rounded-xl bg-light-surface dark:bg-dark-surface border border-light-border dark:border-dark-border text-light-text dark:text-dark-text focus:outline-none focus:ring-2 focus:ring-light-accent dark:focus:ring-dark-accent resize-none"
               />
             </div>
-            <Button type="submit" variant="primary" className="w-full">
-              Send Message
-              <Send size={18} className="ml-2" />
+            {feedback && (
+              <div
+                className={`rounded-xl p-4 text-sm ${
+                  feedback.type === 'success'
+                    ? 'bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-800 dark:text-green-200'
+                    : 'bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200'
+                }`}
+              >
+                {feedback.msg}
+              </div>
+            )}
+            <Button type="submit" variant="primary" className="w-full" disabled={submitting}>
+              {submitting ? (
+                <>
+                  <Loader2 size={18} className="mr-2 shrink-0 animate-spin" />
+                  Sending...
+                </>
+              ) : (
+                <>
+                  Send Message
+                  <Send size={18} className="ml-2 shrink-0" />
+                </>
+              )}
             </Button>
           </form>
         </motion.div>

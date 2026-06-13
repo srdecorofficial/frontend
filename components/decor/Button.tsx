@@ -10,11 +10,11 @@ interface ButtonProps extends Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'onD
 }
 
 export function Button({ variant = 'primary', children, className = '', ...props }: ButtonProps) {
-  const baseStyles = 'px-6 py-3 rounded-2xl font-medium transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2'
+  const baseStyles = 'inline-flex items-center justify-center px-6 py-3 rounded-2xl font-medium transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2'
   
   const variants = {
-    primary: 'bg-light-accent dark:bg-dark-accent text-white hover:opacity-90 focus:ring-light-accent dark:focus:ring-dark-accent',
-    outline: 'border-2 border-light-accent dark:border-dark-accent text-light-accent dark:text-dark-accent hover:bg-light-accent hover:text-white dark:hover:bg-dark-accent dark:hover:text-white focus:ring-light-accent dark:focus:ring-dark-accent',
+    primary: 'bg-[#bf9b23] text-white hover:bg-[#a6871e] focus:ring-[#bf9b23]',
+    outline: 'border-2 border-[#bf9b23] text-[#bf9b23] hover:bg-[#bf9b23] hover:text-white focus:ring-[#bf9b23]',
     ghost: 'text-light-text dark:text-dark-text hover:bg-light-surface dark:hover:bg-dark-surface focus:ring-light-accent dark:focus:ring-dark-accent',
   }
 

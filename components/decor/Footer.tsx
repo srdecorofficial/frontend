@@ -1,37 +1,38 @@
 'use client'
 
 import Link from 'next/link'
-import { Facebook, Instagram, Twitter, Mail } from 'lucide-react'
+import { Linkedin, Instagram, MapPin, Mail, Phone } from 'lucide-react'
 
 export function Footer() {
   return (
-    <footer className="bg-light-surface dark:bg-dark-surface border-t border-light-border dark:border-dark-border mt-20">
+    <footer className="bg-[#052A22] border-t border-[#1a5c48] mt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
-            <h2 className="font-sans text-2xl font-bold text-light-text dark:text-dark-text mb-4">
-              SR Décor
-            </h2>
-            <p className="text-sm text-light-textMuted dark:text-dark-textMuted">
+            <div className="flex items-center gap-3 mb-4">
+              <img src="/logo.svg" alt="JayShree Furnish" className="h-14 w-auto" />
+              <span className="font-sans text-xl font-bold text-[#bf9b23] tracking-wide">JayShree Furnish</span>
+            </div>
+            <p className="text-sm text-[#a8b8b3]">
               Elegant home décor for your living spaces. Premium quality, timeless design.
             </p>
           </div>
 
           <div>
-            <h3 className="font-semibold text-light-text dark:text-dark-text mb-4">Quick Links</h3>
+            <h3 className="font-semibold text-[#bf9b23] mb-4">Quick Links</h3>
             <ul className="space-y-2">
               <li>
-                <Link href="/about" className="text-sm text-light-textMuted dark:text-dark-textMuted hover:text-light-accent dark:hover:text-dark-accent transition-colors">
+                <Link href="/about" className="text-sm text-[#a8b8b3] hover:text-[#bf9b23] transition-colors">
                   About Us
                 </Link>
               </li>
               <li>
-                <Link href="/products" className="text-sm text-light-textMuted dark:text-dark-textMuted hover:text-light-accent dark:hover:text-dark-accent transition-colors">
+                <Link href="/products" className="text-sm text-[#a8b8b3] hover:text-[#bf9b23] transition-colors">
                   Products
                 </Link>
               </li>
               <li>
-                <Link href="/contact" className="text-sm text-light-textMuted dark:text-dark-textMuted hover:text-light-accent dark:hover:text-dark-accent transition-colors">
+                <Link href="/contact" className="text-sm text-[#a8b8b3] hover:text-[#bf9b23] transition-colors">
                   Contact
                 </Link>
               </li>
@@ -39,47 +40,96 @@ export function Footer() {
           </div>
 
           <div>
-            <h3 className="font-semibold text-light-text dark:text-dark-text mb-4">Categories</h3>
+            <h3 className="font-semibold text-[#bf9b23] mb-4">Categories</h3>
             <ul className="space-y-2">
               <li>
-                <Link href="/products?category=Furniture" className="text-sm text-light-textMuted dark:text-dark-textMuted hover:text-light-accent dark:hover:text-dark-accent transition-colors">
-                  Furniture
+                <Link href="/products?category=Curtains" className="text-sm text-[#a8b8b3] hover:text-[#bf9b23] transition-colors">
+                  Curtains
                 </Link>
               </li>
               <li>
-                <Link href="/products?category=Accessories" className="text-sm text-light-textMuted dark:text-dark-textMuted hover:text-light-accent dark:hover:text-dark-accent transition-colors">
-                  Accessories
+                <Link href="/products?category=Curtain Rods" className="text-sm text-[#a8b8b3] hover:text-[#bf9b23] transition-colors">
+                  Curtain Rods
                 </Link>
               </li>
               <li>
-                <Link href="/products?category=Textiles" className="text-sm text-light-textMuted dark:text-dark-textMuted hover:text-light-accent dark:hover:text-dark-accent transition-colors">
-                  Textiles
+                <Link href="/products?category=Curtain Channels" className="text-sm text-[#a8b8b3] hover:text-[#bf9b23] transition-colors">
+                  Curtain Channels
+                </Link>
+              </li>
+              <li>
+                <Link href="/products?category=Artefacts" className="text-sm text-[#a8b8b3] hover:text-[#bf9b23] transition-colors">
+                  Artefacts
                 </Link>
               </li>
             </ul>
           </div>
 
           <div>
-            <h3 className="font-semibold text-light-text dark:text-dark-text mb-4">Connect</h3>
+            <h3 className="font-semibold text-[#bf9b23] mb-4">Get in Touch</h3>
+            <ul className="space-y-3 mb-5 text-sm text-[#a8b8b3]">
+              <li className="flex items-start gap-2">
+                <MapPin size={16} className="shrink-0 mt-0.5 text-[#bf9b23]" />
+                <span>
+                  23/2, Rajendra Market Road, Sikanderpur, DLF Phase 1, Sector 24, Sikanderpur Ghosi, Gurugram, Haryana 122002
+                </span>
+              </li>
+              <li className="flex items-start gap-2">
+                <Phone size={16} className="shrink-0 mt-0.5 text-[#bf9b23]" />
+                <span className="flex flex-col">
+                  <a href="tel:+919811627334" className="hover:text-[#bf9b23] transition-colors">+91-9811627334</a>
+                  <a href="tel:+919315590584" className="hover:text-[#bf9b23] transition-colors">+91-9315590584</a>
+                  <a href="tel:+919315586128" className="hover:text-[#bf9b23] transition-colors">+91-9315586128</a>
+                </span>
+              </li>
+              <li className="flex items-start gap-2">
+                <Mail size={16} className="shrink-0 mt-0.5 text-[#bf9b23]" />
+                <a href="mailto:contact@jsfurnish.com" className="hover:text-[#bf9b23] transition-colors">
+                  contact@jsfurnish.com
+                </a>
+              </li>
+            </ul>
             <div className="flex gap-4">
-              <a href="#" className="text-light-textMuted dark:text-dark-textMuted hover:text-light-accent dark:hover:text-dark-accent transition-colors">
-                <Facebook size={20} />
+              <a
+                href="https://www.linkedin.com/company/jayshree-furnish/"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="LinkedIn"
+                className="text-[#a8b8b3] hover:text-[#bf9b23] transition-colors"
+              >
+                <Linkedin size={20} />
               </a>
-              <a href="#" className="text-light-textMuted dark:text-dark-textMuted hover:text-light-accent dark:hover:text-dark-accent transition-colors">
+              <a
+                href="https://www.instagram.com/js_furnish/"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Instagram"
+                className="text-[#a8b8b3] hover:text-[#bf9b23] transition-colors"
+              >
                 <Instagram size={20} />
               </a>
-              <a href="#" className="text-light-textMuted dark:text-dark-textMuted hover:text-light-accent dark:hover:text-dark-accent transition-colors">
-                <Twitter size={20} />
+              <a
+                href="https://maps.app.goo.gl/VrxNYVy8YM83Z8Ym8"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Location on Google Maps"
+                className="text-[#a8b8b3] hover:text-[#bf9b23] transition-colors"
+              >
+                <MapPin size={20} />
               </a>
-              <a href="#" className="text-light-textMuted dark:text-dark-textMuted hover:text-light-accent dark:hover:text-dark-accent transition-colors">
+              <a
+                href="mailto:contact@jsfurnish.com"
+                aria-label="Email"
+                className="text-[#a8b8b3] hover:text-[#bf9b23] transition-colors"
+              >
                 <Mail size={20} />
               </a>
             </div>
           </div>
         </div>
 
-        <div className="mt-8 pt-8 border-t border-light-border dark:border-dark-border text-center text-sm text-light-textMuted dark:text-dark-textMuted">
-          <p>&copy; {new Date().getFullYear()} SR Décor. All rights reserved.</p>
+        <div className="mt-8 pt-8 border-t border-[#1a5c48] text-center text-sm text-[#a8b8b3]">
+          <p>&copy; {new Date().getFullYear()} JayShree Furnish. All rights reserved.</p>
         </div>
       </div>
     </footer>

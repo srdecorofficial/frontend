@@ -1,19 +1,25 @@
 'use client'
 
 import React, { createContext, useContext, useEffect, useState } from 'react'
-import { 
-  User, 
-  signInWithEmailAndPassword, 
-  createUserWithEmailAndPassword, 
-  signOut, 
-  onAuthStateChanged, 
-  signInWithPopup 
+import {
+  User,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  signOut,
+  onAuthStateChanged,
+  signInWithPopup
 } from 'firebase/auth'
 import { auth, googleProvider } from '@/lib/firebase'
+
+export type AdminRole = 'super_admin' | 'marketing_admin' | 'sales_admin'
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
 interface AuthContextType {
   user: User | null
   loading: boolean
+  role: AdminRole | null
+  roleLoading: boolean
   signIn: (email: string, password: string) => Promise<User>
   signUp: (email: string, password: string) => Promise<User>
   signInWithGoogle: () => Promise<User>
@@ -25,18 +31,39 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
+  const [role, setRole] = useState<AdminRole | null>(null)
+  const [roleLoading, setRoleLoading] = useState(true)
+
+  // Fetch role from the backend /auth/me endpoint
+  const fetchRole = async (currentUser: User) => {
+    setRoleLoading(true)
+    try {
+      const token = await currentUser.getIdToken()
+      const res = await fetch(`${API_URL}/api/v1/auth/me`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      if (res.ok) {
+        const json = await res.json()
+        setRole(json.data?.role ?? null)
+      } else {
+        setRole(null)
+      }
+    } catch {
+      setRole(null)
+    } finally {
+      setRoleLoading(false)
+    }
+  }
 
   useEffect(() => {
-    // Set a timeout to prevent infinite loading
     const timeout = setTimeout(() => {
       console.warn('Auth check timeout - setting loading to false')
       setLoading(false)
-    }, 3000) // 3 second timeout
+    }, 3000)
 
     let unsubscribe: (() => void) | null = null
 
     try {
-      // Check if auth is available
       if (!auth) {
         console.warn('Firebase auth not available - auth disabled')
         setLoading(false)
@@ -46,10 +73,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       unsubscribe = onAuthStateChanged(
         auth,
-        (user) => {
-          setUser(user)
+        (currentUser) => {
+          setUser(currentUser)
           setLoading(false)
           clearTimeout(timeout)
+          if (currentUser) {
+            fetchRole(currentUser)
+          } else {
+            setRole(null)
+            setRoleLoading(false)
+          }
         },
         (error) => {
           console.error('Auth state error:', error)
@@ -64,11 +97,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
 
     return () => {
-      if (unsubscribe) {
-        unsubscribe()
-      }
+      if (unsubscribe) unsubscribe()
       clearTimeout(timeout)
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const signIn = async (email: string, password: string) => {
@@ -101,19 +133,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = async () => {
     try {
       await signOut(auth)
+      setRole(null)
     } catch (error: any) {
       throw new Error('Logout failed: ' + error.message)
     }
   }
 
-  const value = {
-    user,
-    loading,
-    signIn,
-    signUp,
-    signInWithGoogle,
-    logout
-  }
+  const value = { user, loading, role, roleLoading, signIn, signUp, signInWithGoogle, logout }
 
   return (
     <AuthContext.Provider value={value}>
@@ -128,4 +154,9 @@ export function useAuth() {
     throw new Error('useAuth must be used within an AuthProvider')
   }
   return context
+}
+
+/** Convenience hook — returns the current admin role (null if not an admin) */
+export function useRole() {
+  return useAuth().role
 }

@@ -4,9 +4,9 @@ import { useState, FormEvent } from 'react'
 import { Modal } from './Modal'
 import { Button } from './Button'
 import { Product } from '@/data/products'
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore'
-import { db } from '@/lib/firebase'
 import { Mail, Phone, Info, Loader2 } from 'lucide-react'
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
 
 interface QuotationRequestModalProps {
   isOpen: boolean
@@ -27,49 +27,41 @@ export function QuotationRequestModal({ isOpen, onClose, product }: QuotationReq
     e.preventDefault()
     setError('')
 
-    // Validate that at least email or phone is provided
-    if (!email.trim() && !phone.trim()) {
-      setError('Please provide either an email address or phone number')
+    // Phone is required
+    if (!/^[0-9]{10}$/.test(phone.trim().replace(/[\s-]/g, ''))) {
+      setError('Please enter a valid 10-digit phone number')
       return
     }
 
-    // Validate email format if provided
+    // Email is optional, but must be valid if provided
     if (email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
       setError('Please enter a valid email address')
-      return
-    }
-
-    // Validate phone format if provided (basic validation - 10 digits)
-    if (phone.trim() && !/^[0-9]{10}$/.test(phone.trim().replace(/[\s-]/g, ''))) {
-      setError('Please enter a valid 10-digit phone number')
       return
     }
 
     setIsSubmitting(true)
 
     try {
-      // Check if Firebase is configured
-      if (!db) {
-        throw new Error('Firebase is not configured. Please contact the administrator.')
-      }
-
-      // Save quotation request to Firestore
-      await addDoc(collection(db, 'quotationRequests'), {
-        productId: product.id,
-        productName: product.name,
-        productCategory: product.category,
-        productPrice: product.price,
-        customerName: name.trim() || 'Not provided',
-        email: email.trim() || '',
-        phone: phone.trim() || '',
-        message: message.trim() || '',
-        status: 'pending',
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp()
+      // Submit through the backend API (direct Firestore writes are denied by security rules)
+      const res = await fetch(`${API_URL}/api/v1/leads`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: name.trim(),
+          email: email.trim(),
+          phone: phone.trim(),
+          message: message.trim(),
+          product: product.name,
+        }),
       })
 
+      if (!res.ok) {
+        const json = await res.json().catch(() => null)
+        throw new Error(json?.error?.message || 'Request failed')
+      }
+
       setSuccess(true)
-      
+
       // Reset form
       setTimeout(() => {
         setEmail('')
@@ -81,7 +73,9 @@ export function QuotationRequestModal({ isOpen, onClose, product }: QuotationReq
       }, 2000)
     } catch (err: any) {
       console.error('Error submitting quotation request:', err)
-      setError('Failed to submit request. Please try again later.')
+      setError(err?.message && err.message !== 'Request failed'
+        ? err.message
+        : 'Failed to submit request. Please try again later.')
     } finally {
       setIsSubmitting(false)
     }
@@ -136,7 +130,7 @@ export function QuotationRequestModal({ isOpen, onClose, product }: QuotationReq
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-light-text dark:text-dark-text mb-2">
                 <Mail className="inline h-4 w-4 mr-1" />
-                Email Address {!phone && <span className="text-red-500">*</span>}
+                Email Address <span className="text-light-textMuted dark:text-dark-textMuted">(Optional)</span>
               </label>
               <input
                 type="email"
@@ -152,7 +146,7 @@ export function QuotationRequestModal({ isOpen, onClose, product }: QuotationReq
             <div>
               <label htmlFor="phone" className="block text-sm font-medium text-light-text dark:text-dark-text mb-2">
                 <Phone className="inline h-4 w-4 mr-1" />
-                Phone Number {!email && <span className="text-red-500">*</span>}
+                Phone Number <span className="text-red-500">*</span>
               </label>
               <input
                 type="tel"
@@ -164,7 +158,7 @@ export function QuotationRequestModal({ isOpen, onClose, product }: QuotationReq
                 maxLength={10}
               />
               <p className="text-xs text-light-textMuted dark:text-dark-textMuted mt-1">
-                At least one contact method (email or phone) is required
+                Phone number is required so we can reach you
               </p>
             </div>
 

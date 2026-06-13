@@ -6,7 +6,7 @@ import { Providers } from './providers'
 const inter = Inter({ subsets: ['latin'], variable: '--font-sans' })
 
 export const metadata: Metadata = {
-  title: 'SR Décor - Premium Home Décor',
+  title: 'JayShree Furnish - Premium Home Décor',
   description: 'Elegant and luxurious home décor products for your living spaces',
 }
 
