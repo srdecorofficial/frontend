@@ -3,6 +3,7 @@
 import { Navbar } from '@/components/decor/Navbar'
 import { Footer } from '@/components/decor/Footer'
 import { TopBanner } from '@/components/decor/TopBanner'
+import { WhatsAppWidget } from '@/components/decor/WhatsAppWidget'
 
 export default function DecorLayout({
   children,
@@ -15,6 +16,7 @@ export default function DecorLayout({
       <Navbar />
       <main className="flex-1">{children}</main>
       <Footer />
+      <WhatsAppWidget />
     </div>
   )
 }

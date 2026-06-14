@@ -8,6 +8,11 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-sans' })
 export const metadata: Metadata = {
   title: 'JayShree Furnish - Premium Home Décor',
   description: 'Elegant and luxurious home décor products for your living spaces',
+  icons: {
+    icon: '/logo.svg',
+    shortcut: '/logo.svg',
+    apple: '/logo.svg',
+  },
 }
 
 export default function RootLayout({

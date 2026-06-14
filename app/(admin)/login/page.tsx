@@ -19,7 +19,12 @@ export default function AdminLoginPage() {
       await signInWithGoogle()
       router.push('/admin')
     } catch (err: any) {
-      setError(err?.message || 'Sign-in failed. Please try again.')
+      const message = err?.message || 'Sign-in failed. Please try again.'
+      setError(message)
+      // If the account isn't authorized, send them back to the homepage shortly.
+      if (message.includes('not authorized')) {
+        setTimeout(() => router.push('/'), 3000)
+      }
     } finally {
       setLoading(false)
     }

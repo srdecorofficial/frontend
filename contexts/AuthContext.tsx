@@ -34,9 +34,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [role, setRole] = useState<AdminRole | null>(null)
   const [roleLoading, setRoleLoading] = useState(true)
 
-  // Fetch role from the backend /auth/me endpoint
-  const fetchRole = async (currentUser: User) => {
-    setRoleLoading(true)
+  // Ask the backend to verify the ID token and return the whitelisted admin role.
+  // Returns null if the user is not an authorized admin (or on any failure).
+  const resolveRole = async (currentUser: User): Promise<AdminRole | null> => {
     try {
       const token = await currentUser.getIdToken()
       const res = await fetch(`${API_URL}/api/v1/auth/me`, {
@@ -44,12 +44,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       })
       if (res.ok) {
         const json = await res.json()
-        setRole(json.data?.role ?? null)
-      } else {
-        setRole(null)
+        return (json.data?.role as AdminRole) ?? null
       }
+      return null
     } catch {
-      setRole(null)
+      return null
+    }
+  }
+
+  // Fetch role from the backend /auth/me endpoint and store it in context.
+  const fetchRole = async (currentUser: User) => {
+    setRoleLoading(true)
+    try {
+      setRole(await resolveRole(currentUser))
     } finally {
       setRoleLoading(false)
     }
@@ -122,12 +129,36 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }
 
   const signInWithGoogle = async () => {
+    let signedInUser: User
     try {
       const result = await signInWithPopup(auth, googleProvider)
-      return result.user
+      signedInUser = result.user
     } catch (error: any) {
-      throw new Error('Google sign-in failed: ' + error.message)
+      // Log the real error for debugging, but surface a generic message to the user
+      // so we don't leak technical Firebase codes (e.g. auth/unauthorized-domain).
+      console.error('Google sign-in error:', error)
+
+      const code = error?.code as string | undefined
+      // User dismissed the popup — not an error worth alarming them about.
+      if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') {
+        throw new Error('Sign-in was cancelled. Please try again.')
+      }
+
+      throw new Error('Unable to sign in. Please try again.')
     }
+
+    // Authorization is decided by the backend: verify the token and confirm this
+    // account is in the admin whitelist before letting them proceed.
+    const resolvedRole = await resolveRole(signedInUser)
+    if (!resolvedRole) {
+      await signOut(auth).catch(() => { })
+      setRole(null)
+      throw new Error('This account is not authorized, please contact the administrator.')
+    }
+
+    setRole(resolvedRole)
+    setRoleLoading(false)
+    return signedInUser
   }
 
   const logout = async () => {

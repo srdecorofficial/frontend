@@ -37,7 +37,8 @@ export function Navbar() {
 
       const rect = el.getBoundingClientRect()
       const top = rect.top + window.scrollY
-      thresholdRef.current = top + rect.height * 0.7
+      // Switch to the glass background once the user scrolls just past 5% of the hero.
+      thresholdRef.current = top + rect.height * 0.05
     }
 
     let ticking = false
