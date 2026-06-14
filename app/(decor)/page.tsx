@@ -1,15 +1,10 @@
-'use client'
+import { HomeContent } from '@/components/decor/HomeContent'
+import { fetchJson } from '@/lib/server-api'
+import type { HeroCarouselSlide } from '@/components/decor/HeroCarousel'
 
-import { motion } from 'framer-motion'
-import Link from 'next/link'
-import { useState, useEffect } from 'react'
-import { ProductGrid } from '@/components/decor/ProductGrid'
-import { Button } from '@/components/decor/Button'
-import { HeroCarousel, type HeroCarouselSlide } from '@/components/decor/HeroCarousel'
-import { CategoryGrid } from '@/components/decor/CategoryGrid'
-import { ArrowRight, Sparkles } from 'lucide-react'
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'
+// ISR: statically prerender the homepage and regenerate from the backend at most
+// once per day. Lower this value to make product changes appear sooner.
+export const revalidate = 86400
 
 const FALLBACK_SLIDES: HeroCarouselSlide[] = [
   {
@@ -54,116 +49,30 @@ const FALLBACK_CATEGORIES = [
   { label: 'Lighting', href: '/products?category=Lighting', imageSrc: 'https://images.unsplash.com/photo-1519710164239-da123dc03ef4?w=800', imageAlt: 'Modern lighting fixtures' },
 ]
 
-export default function HomePage() {
-  const [loaded, setLoaded] = useState(false)
-  const [heroSlides, setHeroSlides] = useState<HeroCarouselSlide[]>(FALLBACK_SLIDES)
-  const [categories, setCategories] = useState<any[]>(FALLBACK_CATEGORIES)
-  const [bestsellers, setBestsellers] = useState<any[]>([])
-  const [newArrivals, setNewArrivals] = useState<any[]>([])
+type ApiList<T> = { data?: T[] }
+type PageData = { data?: { heroSlides?: HeroCarouselSlide[] } }
 
-  useEffect(() => {
-    Promise.all([
-      fetch(`${API_URL}/api/v1/pages/home`).then(r => r.ok ? r.json() : null).catch(() => null),
-      fetch(`${API_URL}/api/v1/categories`).then(r => r.json()).catch(() => ({ data: [] })),
-      fetch(`${API_URL}/api/v1/products?bestseller=true`).then(r => r.json()).catch(() => ({ data: [] })),
-      fetch(`${API_URL}/api/v1/products?newArrival=true`).then(r => r.json()).catch(() => ({ data: [] })),
-    ]).then(([pageData, catsData, bestData, newData]) => {
-      if (pageData?.data?.heroSlides?.length) setHeroSlides(pageData.data.heroSlides)
-      if (catsData?.data?.length) setCategories(catsData.data)
-      if (bestData?.data?.length) setBestsellers(bestData.data.slice(0, 4))
-      if (newData?.data?.length) setNewArrivals(newData.data.slice(0, 4))
-      setLoaded(true)
-    })
-  }, [])
+export default async function HomePage() {
+  // Fetch all home data on the server. Each call falls back independently so one
+  // failing endpoint never breaks the render.
+  const [pageData, catsData, bestData, newData] = await Promise.all([
+    fetchJson<PageData>('/api/v1/pages/home', {}, revalidate),
+    fetchJson<ApiList<any>>('/api/v1/categories', { data: [] }, revalidate),
+    fetchJson<ApiList<any>>('/api/v1/products?bestseller=true', { data: [] }, revalidate),
+    fetchJson<ApiList<any>>('/api/v1/products?newArrival=true', { data: [] }, revalidate),
+  ])
 
-  const categoryTextBlock = {
-    headline: 'Magical\nIllumination',
-    description: 'Create the perfect ambiance with lighting that adds warmth and style to every room',
-  }
+  const heroSlides = pageData?.data?.heroSlides?.length ? pageData.data.heroSlides : FALLBACK_SLIDES
+  const categories = catsData?.data?.length ? catsData.data : FALLBACK_CATEGORIES
+  const bestsellers = (bestData?.data ?? []).slice(0, 4)
+  const newArrivals = (newData?.data ?? []).slice(0, 4)
 
   return (
-    <div className="w-full">
-      {/* Hero Section */}
-      <HeroCarousel id="home-hero" slides={heroSlides} className="h-[100svh]" />
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-20">
-        {/* Categories */}
-        <section className="mb-20">
-          <motion.h2
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="font-sans text-3xl md:text-4xl font-bold text-center text-light-text dark:text-dark-text mb-12"
-          >
-            Shop by Category
-          </motion.h2>
-          <CategoryGrid items={categories} textBlock={categoryTextBlock} />
-        </section>
-      </div>
-
-      {/* Bestsellers */}
-      <section className="mb-20 w-full">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between mb-12">
-            <motion.h2
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              className="font-sans text-3xl md:text-4xl font-bold text-light-text dark:text-dark-text"
-            >
-              Bestsellers
-            </motion.h2>
-            <Link href="/bestseller" className="flex items-center">
-              <Button variant="ghost" className="flex items-center gap-2">
-                View All
-                <ArrowRight size={18} />
-              </Button>
-            </Link>
-          </div>
-          {bestsellers.length > 0
-            ? <ProductGrid products={bestsellers} />
-            : !loaded && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {[...Array(4)].map((_, i) => <div key={i} className="h-72 bg-gray-100 dark:bg-gray-800 rounded-2xl animate-pulse" />)}
-              </div>
-            )
-          }
-        </div>
-      </section>
-
-      {/* New Arrivals - Full Width */}
-      <section className="mb-20 w-full">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between mb-12">
-            <div className="flex items-center gap-3">
-              <Sparkles className="text-light-accent dark:text-dark-accent h-7 w-7 md:h-8 md:w-8" />
-              <motion.h2
-                initial={{ opacity: 0, x: -20 }}
-                whileInView={{ opacity: 1, x: 0 }}
-                viewport={{ once: true }}
-                className="font-sans text-3xl md:text-4xl font-bold text-light-text dark:text-dark-text"
-              >
-                New Arrivals
-              </motion.h2>
-            </div>
-            <Link href="/new-arrivals" className="flex items-center">
-              <Button variant="ghost" className="flex items-center gap-2">
-                View All
-                <ArrowRight size={18} />
-              </Button>
-            </Link>
-          </div>
-          {newArrivals.length > 0
-            ? <ProductGrid products={newArrivals} />
-            : !loaded && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {[...Array(4)].map((_, i) => <div key={i} className="h-72 bg-gray-100 dark:bg-gray-800 rounded-2xl animate-pulse" />)}
-              </div>
-            )
-          }
-        </div>
-      </section>
-    </div>
+    <HomeContent
+      heroSlides={heroSlides}
+      categories={categories}
+      bestsellers={bestsellers}
+      newArrivals={newArrivals}
+    />
   )
 }
