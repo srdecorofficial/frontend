@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion'
 import Link from 'next/link'
-import { ProductGrid } from '@/components/decor/ProductGrid'
+import { ProductRail } from '@/components/decor/ProductRail'
 import { Button } from '@/components/decor/Button'
 import { HeroCarousel, type HeroCarouselSlide } from '@/components/decor/HeroCarousel'
 import { CategoryGrid } from '@/components/decor/CategoryGrid'
@@ -50,9 +50,9 @@ export function HomeContent({ heroSlides, categories, bestsellers, newArrivals }
       </div>
 
       {/* Bestsellers */}
-      <section className="mb-20 w-full">
+      <section className="mb-16 md:mb-20 w-full">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between mb-12">
+          <div className="flex items-center justify-between mb-6 md:mb-12">
             <motion.h2
               initial={{ opacity: 0, x: -20 }}
               whileInView={{ opacity: 1, x: 0 }}
@@ -61,23 +61,23 @@ export function HomeContent({ heroSlides, categories, bestsellers, newArrivals }
             >
               Bestsellers
             </motion.h2>
-            <Link href="/bestseller" className="flex items-center">
+            <Link href="/bestseller" className="flex items-center shrink-0">
               <Button variant="ghost" className="flex items-center gap-2">
                 View All
                 <ArrowRight size={18} />
               </Button>
             </Link>
           </div>
-          {bestsellers.length > 0 && <ProductGrid products={bestsellers} />}
+          <ProductRail products={bestsellers} />
         </div>
       </section>
 
-      {/* New Arrivals - Full Width */}
-      <section className="mb-20 w-full">
+      {/* New Arrivals */}
+      <section className="mb-16 md:mb-20 w-full">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between mb-12">
+          <div className="flex items-center justify-between mb-6 md:mb-12">
             <div className="flex items-center gap-3">
-              <Sparkles className="text-light-accent dark:text-dark-accent h-7 w-7 md:h-8 md:w-8" />
+              <Sparkles className="text-light-accent dark:text-dark-accent h-7 w-7 md:h-8 md:w-8 shrink-0" />
               <motion.h2
                 initial={{ opacity: 0, x: -20 }}
                 whileInView={{ opacity: 1, x: 0 }}
@@ -87,14 +87,14 @@ export function HomeContent({ heroSlides, categories, bestsellers, newArrivals }
                 New Arrivals
               </motion.h2>
             </div>
-            <Link href="/new-arrivals" className="flex items-center">
+            <Link href="/new-arrivals" className="flex items-center shrink-0">
               <Button variant="ghost" className="flex items-center gap-2">
                 View All
                 <ArrowRight size={18} />
               </Button>
             </Link>
           </div>
-          {newArrivals.length > 0 && <ProductGrid products={newArrivals} />}
+          <ProductRail products={newArrivals} />
         </div>
       </section>
     </div>

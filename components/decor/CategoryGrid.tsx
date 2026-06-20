@@ -63,7 +63,52 @@ export function CategoryGrid({
   }
   
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-6">
+    <>
+      {/* ---------- Mobile: horizontal swipe carousel ---------- */}
+      <div className="md:hidden -mx-4 px-4">
+        <div className="flex gap-4 overflow-x-auto no-scrollbar snap-x snap-mandatory pb-4 pt-1">
+          {items.map((item, index) => (
+            <motion.div
+              key={`m-${item.href}-${index}`}
+              initial={{ opacity: 0, x: 24 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4, delay: Math.min(index, 3) * 0.06 }}
+              className="snap-start shrink-0 w-[68%]"
+            >
+              <Link href={item.href} className="block group">
+                <div className="relative h-64 overflow-hidden rounded-2xl shadow-soft">
+                  <Image
+                    src={item.imageSrc}
+                    alt={item.imageAlt}
+                    fill
+                    className="object-cover transition-transform duration-700 group-active:scale-105"
+                    sizes="70vw"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent" />
+                  <div className="absolute bottom-0 left-0 right-0 p-5 flex items-end justify-between gap-2">
+                    <h3 className="text-white text-lg font-bold uppercase tracking-wider leading-tight">
+                      {item.label}
+                    </h3>
+                    <span className="shrink-0 inline-flex items-center justify-center h-9 w-9 rounded-full bg-white/15 backdrop-blur-sm border border-white/30 text-white">
+                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                        <path d="M5 12h14M13 6l6 6-6 6" />
+                      </svg>
+                    </span>
+                  </div>
+                </div>
+              </Link>
+            </motion.div>
+          ))}
+        </div>
+        {/* Swipe hint */}
+        <p className="text-center text-xs text-light-textMuted dark:text-dark-textMuted -mt-1">
+          Swipe to explore more →
+        </p>
+      </div>
+
+      {/* ---------- Desktop / tablet: masonry grid ---------- */}
+      <div className="hidden md:grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 lg:gap-6">
       {/* First 4 items with special positioning */}
       {firstFourItems.map((item, index) => (
         <motion.div
@@ -155,7 +200,8 @@ export function CategoryGrid({
           </Link>
         </motion.div>
       ))}
-    </div>
+      </div>
+    </>
   )
 }
 

@@ -42,19 +42,7 @@
   .btn-outline {
     @apply bg-transparent text-[#052A22] border border-[#bf9b23] hover:bg-[#fdf8e8] hover:text-[#052A22] focus:ring-[#bf9b23];
   }
-  
-  .btn-danger {
-    @apply bg-red-500 text-white hover:bg-red-600 focus:ring-red-500;
-  }
-  
-  .btn-sm {
-    @apply px-3 py-1.5 text-sm;
-  }
-  
-  .form-group {
-    @apply mb-5;
-  }
-  
+
   .form-label {
     @apply block text-sm font-medium mb-2;
     color: #374151 !important;
@@ -96,66 +84,5 @@
     @apply bg-white rounded-lg shadow-sm border border-gray-200 p-6;
     background-color: #ffffff !important;
     color: #111827 !important;
-  }
-  
-  .modal-overlay {
-    @apply fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50;
-  }
-  
-  .modal-content {
-    @apply bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto;
-  }
-  
-  .modal-header {
-    @apply flex items-center justify-between p-6 border-b border-gray-200;
-  }
-  
-  .modal-body {
-    @apply p-6;
-  }
-  
-  .modal-footer {
-    @apply flex items-center justify-end gap-3 p-6 border-t border-gray-200;
-  }
-  
-  .table {
-    @apply w-full border-collapse;
-  }
-  
-  .table th {
-    @apply px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200;
-  }
-  
-  .table td {
-    @apply px-4 py-3 text-sm text-gray-900 border-b border-gray-200;
-  }
-  
-  .table tbody tr:hover {
-    @apply bg-gray-50;
-  }
-  
-  .search-box {
-    @apply relative;
-  }
-  
-  .search-input {
-    @apply w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent;
-  }
-  
-  .search-icon {
-    @apply absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400;
-  }
-  
-  
-  .error {
-    @apply bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4;
-  }
-  
-  .success {
-    @apply bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg mb-4;
-  }
-  
-  .info {
-    @apply bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-lg mb-4;
   }
 }

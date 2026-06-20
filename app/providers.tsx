@@ -2,7 +2,6 @@
 
 import { ThemeProvider } from '@/components/ThemeProvider'
 import { AuthProvider } from '@/contexts/AuthContext'
-import { AppProvider } from '@/contexts/AppContext'
 import { ErrorBoundary, FallbackProps } from 'react-error-boundary'
 
 function ErrorFallback({ error: unknownError }: FallbackProps) {
@@ -23,9 +22,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <ErrorBoundary FallbackComponent={ErrorFallback}>
       <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
         <AuthProvider>
-          <AppProvider>
-            {children}
-          </AppProvider>
+          {children}
         </AuthProvider>
       </ThemeProvider>
     </ErrorBoundary>

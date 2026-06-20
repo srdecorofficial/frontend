@@ -169,37 +169,40 @@ export function HeroCarousel({
                 sizes="(max-width: 768px) 100vw, 1200px"
               />
             ) : null}
-            <div className="absolute inset-0 bg-gradient-to-r from-black/65 via-black/35 to-black/10" />
+            {/* Mobile: bottom-up gradient (centered text). Desktop: left-origin. */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/40 to-black/20 md:bg-gradient-to-r md:from-black/65 md:via-black/35 md:to-black/10" />
           </motion.div>
         </AnimatePresence>
       </div>
 
-      <div className="relative h-full flex items-center">
+      {/* Mobile anchors content lower (over the darkest part of the gradient);
+          desktop keeps it vertically centered. */}
+      <div className="relative h-full flex items-end pb-24 md:items-center md:pb-0">
         <div className="w-full px-6 md:px-14">
           <div
             className={[
               'max-w-2xl mx-auto text-center',
-              activeSlide?.desktopAlign === 'left' 
-                ? 'md:mx-0 md:text-left md:pl-20 md:pr-20' 
+              activeSlide?.desktopAlign === 'left'
+                ? 'md:mx-0 md:text-left md:pl-20 md:pr-20'
                 : 'md:mx-auto md:text-center md:px-20',
             ].join(' ')}
           >
             {activeSlide?.eyebrow ? (
-              <div className="inline-flex items-center rounded-full bg-white/10 px-4 py-2 text-white/90 text-sm tracking-wide backdrop-blur-sm border border-white/15 mb-6">
+              <div className="inline-flex items-center rounded-full bg-white/10 px-3 py-1.5 md:px-4 md:py-2 text-white/90 text-xs md:text-sm tracking-wide backdrop-blur-sm border border-white/15 mb-4 md:mb-6">
                 {activeSlide.eyebrow}
               </div>
             ) : null}
 
-            <h1 className="font-sans text-4xl md:text-6xl font-bold text-white leading-tight">
+            <h1 className="font-sans text-3xl sm:text-4xl md:text-6xl font-bold text-white leading-tight">
               {activeSlide?.title ?? ''}
             </h1>
-            <p className="text-lg md:text-2xl text-white/90 mt-5">
+            <p className="text-base sm:text-lg md:text-2xl text-white/90 mt-3 md:mt-5 max-w-md mx-auto md:max-w-none md:mx-0">
               {activeSlide?.subtitle ?? ''}
             </p>
 
-            <div className="mt-9 flex items-center justify-center md:justify-start gap-3">
-              <Link href={activeSlide?.href ?? '/products'}>
-                <Button variant="primary">
+            <div className="mt-6 md:mt-9 flex items-center justify-center md:justify-start gap-3">
+              <Link href={activeSlide?.href ?? '/products'} className="w-full sm:w-auto">
+                <Button variant="primary" className="w-full sm:w-auto">
                   {activeSlide?.ctaLabel ?? 'Explore Collection'}
                 </Button>
               </Link>

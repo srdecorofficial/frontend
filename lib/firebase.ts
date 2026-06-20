@@ -1,6 +1,5 @@
 import { initializeApp } from 'firebase/app'
 import { getAuth, GoogleAuthProvider } from 'firebase/auth'
-import { getFirestore } from 'firebase/firestore'
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || '',
@@ -11,10 +10,12 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || ''
 }
 
-// Initialize Firebase only if config is available
+// Initialize Firebase only if config is available.
+// Note: only Firebase Auth is used on the client — all data access goes through
+// the backend Express API (Firebase Admin SDK). There is intentionally no
+// Firestore client (`db`) here; the security rules deny all direct client access.
 let app: any = null
 let auth: any = null
-let db: any = null
 let googleProvider: any = null
 
 try {
@@ -22,23 +23,20 @@ try {
   if (firebaseConfig.apiKey && firebaseConfig.projectId && firebaseConfig.apiKey !== '' && firebaseConfig.projectId !== '') {
     app = initializeApp(firebaseConfig)
     auth = getAuth(app)
-    db = getFirestore(app)
     googleProvider = new GoogleAuthProvider()
   } else {
     console.warn('Firebase configuration missing - auth features disabled')
     // Set to null to prevent errors
     auth = null
-    db = null
     googleProvider = null
   }
 } catch (error: any) {
   console.error('Firebase initialization error:', error?.message || error)
   // If initialization fails, set to null to prevent further errors
   auth = null
-  db = null
   googleProvider = null
   app = null
 }
 
-export { auth, db, googleProvider }
+export { auth, googleProvider }
 export default app

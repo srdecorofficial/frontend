@@ -8,7 +8,6 @@ import {
   Package,
   Tag,
   Layers,
-  Settings,
   Users,
   MessageCircle,
 } from 'lucide-react'
@@ -29,7 +28,6 @@ const navigation: NavItem[] = [
   { name: 'SubCategories', href: '/admin/subcategories', icon: Layers, roles: ['super_admin', 'marketing_admin'] },
   { name: 'Leads', href: '/admin/leads', icon: Users, roles: ['super_admin', 'sales_admin'] },
   { name: 'Contact Messages', href: '/admin/contact-messages', icon: MessageCircle, roles: ['super_admin', 'sales_admin'] },
-  { name: 'Settings', href: '/admin/settings', icon: Settings, roles: ['super_admin'] },
 ]
 
 export default function AdminSidebar() {
