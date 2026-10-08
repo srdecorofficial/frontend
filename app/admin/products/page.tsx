@@ -31,6 +31,7 @@ interface Product {
   isBestseller: boolean
   isNewArrival: boolean
   inStock: boolean
+  isVisible: boolean
 }
 
 const EMPTY_PRODUCT: Omit<Product, 'id'> = {
@@ -43,6 +44,7 @@ const EMPTY_PRODUCT: Omit<Product, 'id'> = {
   isBestseller: false,
   isNewArrival: false,
   inStock: true,
+  isVisible: true,
 }
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
@@ -82,7 +84,11 @@ function ProductsContent() {
   const loadProducts = useCallback(async () => {
     setLoading(true)
     try {
-      const res = await fetch(`${API_URL}/api/v1/products`)
+      // Send the admin token so the API returns ALL products, including hidden ones.
+      const token = await getToken()
+      const res = await fetch(`${API_URL}/api/v1/products`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      })
       const json = await res.json()
       setProducts(Array.isArray(json.data) ? json.data : [])
     } catch {
@@ -90,13 +96,15 @@ function ProductsContent() {
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [getToken])
 
   const loadCategoriesAndSubs = useCallback(async () => {
     try {
+      const token = await getToken()
+      const headers: Record<string, string> = token ? { Authorization: `Bearer ${token}` } : {}
       const [catRes, subRes] = await Promise.all([
-        fetch(`${API_URL}/api/v1/categories`),
-        fetch(`${API_URL}/api/v1/subcategories`),
+        fetch(`${API_URL}/api/v1/categories`, { headers }),
+        fetch(`${API_URL}/api/v1/subcategories`, { headers }),
       ])
       const [catJson, subJson] = await Promise.all([catRes.json(), subRes.json()])
       setCategories(
@@ -106,7 +114,7 @@ function ProductsContent() {
       )
       setAllSubCategories(Array.isArray(subJson.data) ? subJson.data : [])
     } catch { }
-  }, [])
+  }, [getToken])
 
   useEffect(() => { loadProducts(); loadCategoriesAndSubs() }, [loadProducts, loadCategoriesAndSubs])
 
@@ -293,6 +301,22 @@ function ProductsContent() {
                 </label>
               ))}
             </div>
+            {/* Storefront visibility */}
+            <div className="md:col-span-2">
+              <label className="flex items-center justify-between gap-3 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 cursor-pointer">
+                <span>
+                  <span className="block text-sm font-medium text-gray-800">Show on website</span>
+                  <span className="block text-xs text-gray-500">When off, this product is hidden from the storefront but stays here for you to manage.</span>
+                </span>
+                <input
+                  type="checkbox"
+                  role="switch"
+                  checked={form.isVisible}
+                  onChange={e => setForm({ ...form, isVisible: e.target.checked })}
+                  className="w-5 h-5 accent-[#bf9b23]"
+                />
+              </label>
+            </div>
           </div>
           <div className="flex gap-3 pt-2">
             <button onClick={saveProduct} disabled={saving} className="btn btn-primary flex items-center gap-2">
@@ -377,13 +401,14 @@ function ProductsContent() {
             </thead>
             <tbody className="divide-y divide-gray-100">
               {filteredProducts.map((p) => (
-                <tr key={p.id} className="hover:bg-gray-50 transition-colors">
+                <tr key={p.id} className={`hover:bg-gray-50 transition-colors ${p.isVisible === false ? 'opacity-60' : ''}`}>
                   <td className="px-4 py-3 font-medium text-gray-900">{p.name}</td>
                   <td className="px-4 py-3 text-gray-600">{p.category}</td>
                   <td className="px-4 py-3 text-gray-500 text-xs">{p.subCategory || <span className="italic text-gray-300">—</span>}</td>
                   <td className="px-4 py-3 text-gray-900">₹{p.price.toLocaleString('en-IN')}</td>
                   <td className="px-4 py-3">
                     <div className="flex gap-1 flex-wrap">
+                      {p.isVisible === false && <span className="px-2 py-0.5 rounded-full bg-gray-200 text-gray-600 text-xs font-medium">Hidden</span>}
                       {p.isBestseller && <span className="px-2 py-0.5 rounded-full bg-orange-100 text-orange-700 text-xs font-medium">Bestseller</span>}
                       {p.isNewArrival && <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 text-xs font-medium">New</span>}
                       {!p.inStock && <span className="px-2 py-0.5 rounded-full bg-red-100 text-red-600 text-xs font-medium">Out of stock</span>}

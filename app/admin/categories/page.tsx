@@ -14,6 +14,7 @@ interface Category {
     imageSrc: string
     imageAlt: string
     order: number
+    isVisible: boolean
 }
 
 const EMPTY_FORM: Omit<Category, 'id'> = {
@@ -22,6 +23,7 @@ const EMPTY_FORM: Omit<Category, 'id'> = {
     imageSrc: '',
     imageAlt: '',
     order: 0,
+    isVisible: true,
 }
 
 export default function AdminCategoriesPage() {
@@ -47,7 +49,11 @@ function CategoriesContent() {
     const loadCategories = useCallback(async () => {
         setLoading(true)
         try {
-            const res = await fetch(`${API_URL}/api/v1/categories`)
+            // Send the admin token so the API returns ALL categories, including hidden ones.
+            const token = await getToken()
+            const res = await fetch(`${API_URL}/api/v1/categories`, {
+                headers: token ? { Authorization: `Bearer ${token}` } : {},
+            })
             const json = await res.json()
             setCategories(Array.isArray(json.data) ? json.data : [])
         } catch {
@@ -55,7 +61,7 @@ function CategoriesContent() {
         } finally {
             setLoading(false)
         }
-    }, [])
+    }, [getToken])
 
     useEffect(() => { loadCategories() }, [loadCategories])
 
@@ -164,6 +170,21 @@ function CategoriesContent() {
                                 onChange={(e) => setForm({ ...form, order: Number(e.target.value) })}
                             />
                         </div>
+                        <div className="md:col-span-2">
+                            <label className="flex items-center justify-between gap-3 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 cursor-pointer">
+                                <span>
+                                    <span className="block text-sm font-medium text-gray-800">Show on website</span>
+                                    <span className="block text-xs text-gray-500">When off, this category and all its products are hidden from the storefront.</span>
+                                </span>
+                                <input
+                                    type="checkbox"
+                                    role="switch"
+                                    checked={form.isVisible}
+                                    onChange={(e) => setForm({ ...form, isVisible: e.target.checked })}
+                                    className="w-5 h-5 accent-[#bf9b23]"
+                                />
+                            </label>
+                        </div>
                     </div>
                     <div className="flex gap-3 pt-2">
                         <button onClick={saveCategory} disabled={saving} className="btn btn-primary flex items-center gap-2">
@@ -198,9 +219,14 @@ function CategoriesContent() {
                         </thead>
                         <tbody className="divide-y divide-gray-100">
                             {categories.map((c) => (
-                                <tr key={c.id} className="hover:bg-gray-50 transition-colors">
+                                <tr key={c.id} className={`hover:bg-gray-50 transition-colors ${c.isVisible === false ? 'opacity-60' : ''}`}>
                                     <td className="px-4 py-3 text-gray-500 text-center">{c.order}</td>
-                                    <td className="px-4 py-3 font-medium text-gray-900">{c.label}</td>
+                                    <td className="px-4 py-3 font-medium text-gray-900">
+                                        <span className="flex items-center gap-2">
+                                            {c.label}
+                                            {c.isVisible === false && <span className="px-2 py-0.5 rounded-full bg-gray-200 text-gray-600 text-xs font-medium">Hidden</span>}
+                                        </span>
+                                    </td>
                                     <td className="px-4 py-3 text-gray-600 font-mono text-xs">{c.href}</td>
                                     <td className="px-4 py-3 hidden md:table-cell">
                                         {c.imageSrc && (

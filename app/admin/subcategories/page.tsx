@@ -18,12 +18,14 @@ interface SubCategory {
     label: string
     categoryId: string
     order: number
+    isVisible: boolean
 }
 
 const EMPTY_FORM: Omit<SubCategory, 'id'> = {
     label: '',
     categoryId: '',
     order: 0,
+    isVisible: true,
 }
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
@@ -60,7 +62,11 @@ function SubCategoriesContent() {
     const loadSubCategories = useCallback(async () => {
         setLoading(true)
         try {
-            const res = await fetch(`${API_URL}/api/v1/subcategories`)
+            // Send the admin token so the API returns ALL subcategories, including hidden ones.
+            const token = await getToken()
+            const res = await fetch(`${API_URL}/api/v1/subcategories`, {
+                headers: token ? { Authorization: `Bearer ${token}` } : {},
+            })
             const json = await res.json()
             setSubCategories(Array.isArray(json.data) ? json.data : [])
         } catch {
@@ -68,22 +74,25 @@ function SubCategoriesContent() {
         } finally {
             setLoading(false)
         }
-    }, [])
+    }, [getToken])
 
     const loadCategories = useCallback(async () => {
         try {
-            const res = await fetch(`${API_URL}/api/v1/categories`)
+            const token = await getToken()
+            const res = await fetch(`${API_URL}/api/v1/categories`, {
+                headers: token ? { Authorization: `Bearer ${token}` } : {},
+            })
             const json = await res.json()
             setCategories(Array.isArray(json.data) ? json.data.sort((a: Category, b: Category) => a.order - b.order) : [])
         } catch { }
-    }, [])
+    }, [getToken])
 
     useEffect(() => { loadSubCategories(); loadCategories() }, [loadSubCategories, loadCategories])
 
     const getCategoryLabel = (id: string) => categories.find(c => c.id === id)?.label ?? id
 
     const openAdd = () => { setEditing(null); setForm({ ...EMPTY_FORM, order: subcategories.length }); setShowForm(true) }
-    const openEdit = (s: SubCategory) => { setEditing(s); setForm({ label: s.label, categoryId: s.categoryId, order: s.order }); setShowForm(true) }
+    const openEdit = (s: SubCategory) => { setEditing(s); setForm({ label: s.label, categoryId: s.categoryId, order: s.order, isVisible: s.isVisible !== false }); setShowForm(true) }
     const closeForm = () => { setShowForm(false); setEditing(null) }
 
     const saveSubCategory = async () => {
@@ -196,6 +205,19 @@ function SubCategoriesContent() {
                             />
                         </Field>
                     </div>
+                    <label className="flex items-center justify-between gap-3 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 cursor-pointer">
+                        <span>
+                            <span className="block text-sm font-medium text-gray-800">Show on website</span>
+                            <span className="block text-xs text-gray-500">When off, this subcategory is hidden from the storefront filters.</span>
+                        </span>
+                        <input
+                            type="checkbox"
+                            role="switch"
+                            checked={form.isVisible}
+                            onChange={e => setForm({ ...form, isVisible: e.target.checked })}
+                            className="w-5 h-5 accent-[#bf9b23]"
+                        />
+                    </label>
                     <div className="flex gap-3 pt-2">
                         <button onClick={saveSubCategory} disabled={saving} className="btn btn-primary flex items-center gap-2">
                             <Save size={16} />{saving ? 'Saving…' : 'Save'}
@@ -262,10 +284,15 @@ function SubCategoriesContent() {
                         </thead>
                         <tbody className="divide-y divide-gray-100">
                             {filteredSubCategories.map((s) => (
-                                <tr key={s.id} className="hover:bg-gray-50 transition-colors">
+                                <tr key={s.id} className={`hover:bg-gray-50 transition-colors ${s.isVisible === false ? 'opacity-60' : ''}`}>
                                     <td className="px-4 py-3 text-gray-500 text-center">{s.order}</td>
                                     <td className="px-4 py-3 text-gray-600">{getCategoryLabel(s.categoryId)}</td>
-                                    <td className="px-4 py-3 font-medium text-gray-900">{s.label}</td>
+                                    <td className="px-4 py-3 font-medium text-gray-900">
+                                        <span className="flex items-center gap-2">
+                                            {s.label}
+                                            {s.isVisible === false && <span className="px-2 py-0.5 rounded-full bg-gray-200 text-gray-600 text-xs font-medium">Hidden</span>}
+                                        </span>
+                                    </td>
                                     <td className="px-4 py-3 text-right">
                                         <div className="flex gap-2 justify-end">
                                             <button onClick={() => openEdit(s)} className="p-1.5 rounded hover:bg-gray-100 text-gray-600"><Pencil size={15} /></button>
